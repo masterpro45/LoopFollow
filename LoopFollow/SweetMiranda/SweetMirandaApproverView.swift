@@ -118,6 +118,17 @@ enum SweetMirandaApprover {
         return [payloadVersion, id, hash, expiresRaw].joined(separator: "|")
     }
 
+    /// Trio only accepts a signature over an expiry that is in the future and at most a day out
+    /// (plus 5 minutes of clock slack), so never spend Face ID on one it would ignore.
+    static func signableExpiry(_ expiresRaw: String, now: Date = Date()) -> Bool {
+        let frac = ISO8601DateFormatter()
+        frac.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let plain = ISO8601DateFormatter()
+        plain.formatOptions = [.withInternetDateTime]
+        guard !expiresRaw.isEmpty, let e = frac.date(from: expiresRaw) ?? plain.date(from: expiresRaw) else { return false }
+        return e > now && e.timeIntervalSince(now) <= 24 * 3600 + 300
+    }
+
     private static func hex<D: Sequence>(_ digest: D) -> String where D.Element == UInt8 {
         digest.map { String(format: "%02x", $0) }.joined()
     }
@@ -321,6 +332,10 @@ final class SweetMirandaApproverModel: ObservableObject {
         }
         guard let payload = SweetMirandaApprover.payload(id: p.id, changes: p.changes, expiresRaw: p.expiresRaw) else {
             status = "Could not read this proposal."
+            return
+        }
+        guard SweetMirandaApprover.signableExpiry(p.expiresRaw) else {
+            status = "This proposal has no valid expiry, so Miranda's phone would ignore a Face ID approval. Approve it on her phone instead."
             return
         }
         working = true
