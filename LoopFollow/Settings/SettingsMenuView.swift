@@ -62,6 +62,7 @@ enum SettingsRoute: Hashable, Identifiable {
         case liveActivity
     #endif
     case remote
+    case sweetMiranda
     case importExport
     case calendar, contact
     case advanced
@@ -90,6 +91,7 @@ enum SettingsRoute: Hashable, Identifiable {
             case .liveActivity: return "Live Activity"
         #endif
         case .remote: return "Remote"
+        case .sweetMiranda: return "Sweet Miranda"
         case .alarmSettings: return "Alarms"
         case .calendar: return "Calendar"
         case .contact: return "Contact"
@@ -114,6 +116,7 @@ enum SettingsRoute: Hashable, Identifiable {
             case .liveActivity: return "dot.radiowaves.left.and.right"
         #endif
         case .remote: return "antenna.radiowaves.left.and.right"
+        case .sweetMiranda: return "faceid"
         case .alarmSettings: return "bell.badge"
         case .calendar: return "calendar"
         case .contact: return "person.circle"
@@ -224,6 +227,9 @@ enum SettingsRoute: Hashable, Identifiable {
                 SettingsLeaf("Shared Secret"),
                 SettingsLeaf("QR Code URL", ["qr"]),
             ]
+        case .sweetMiranda: return [
+                SettingsLeaf("Approve settings with Face ID", ["trio", "miranda", "approver", "proposal"]),
+            ]
         case .alarmSettings: return [
                 SettingsLeaf("All Alerts Snoozed", ["snooze all"]),
                 SettingsLeaf("All Sounds Muted", ["mute all"]),
@@ -278,6 +284,7 @@ enum SettingsRoute: Hashable, Identifiable {
         #endif
         if nightscoutConfigured {
             app.append(.remote)
+            app.append(.sweetMiranda)
         }
 
         return [
@@ -308,6 +315,7 @@ enum SettingsRoute: Hashable, Identifiable {
             case .liveActivity: LiveActivitySettingsView()
         #endif
         case .remote: RemoteSettingsView(viewModel: .init())
+        case .sweetMiranda: SweetMirandaApproverView()
         case .importExport: ImportExportSettingsView()
         case .calendar: CalendarSettingsView()
         case .contact: ContactSettingsView(viewModel: .init())
